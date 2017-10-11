@@ -118,6 +118,7 @@
     <Compile Include="Bugs\GH549.cs" />
     <Compile Include="Bugs\GH553.cs" />
     <Compile Include="Bugs\GH597.cs" />
+    <Compile Include="Bugs\GH626.cs" />
     <Compile Include="Bugs\VideoCStoreProvider.cs" />
     <Compile Include="DicomAnonymizerTest.cs" />
     <Compile Include="DicomDatasetExtensionsTest.cs" />
@@ -294,6 +295,7 @@
     <None Include="Test Data\GH610.dcm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Test Data\GH626.dcm" />
     <None Include="Test Data\minimumdict.xml.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
