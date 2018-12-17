@@ -306,18 +306,24 @@ namespace Dicom
                 }
             }
 
-            if (typeof(T) == typeof(DateTime) || typeof(T) == typeof(object))
+            if (typeof(T).GetTypeInfo().IsArray)
             {
-                if (item == -1) return (T)((object)_values[0]);
+                var t = typeof(T).GetTypeInfo().GetElementType();
+                var tu = Nullable.GetUnderlyingType(t) ?? t;
+                var tmp = _values.Select(x => Convert.ChangeType(x, tu));
 
+                if (t == typeof(object)) return (T)(object)tmp.ToArray();
+                if (t == typeof(DateTime)) return (T)(object)tmp.Cast<DateTime>().ToArray();
+                if (t == typeof(DateTime?)) return (T)(object)tmp.Cast<DateTime?>().ToArray();
+            }
+            else if (typeof(T).GetTypeInfo().IsValueType || typeof(T) == typeof(object))
+            {
+                if (item == -1) item = 0;
                 if (item < 0 || item >= Count) throw new ArgumentOutOfRangeException("item", "Index is outside the range of available value items");
 
-                return (T)((object)_values[item]);
-            }
+                var t = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
-            if (typeof(T) == typeof(DateTime[]) || typeof(T) == typeof(object[]))
-            {
-                return (T)(object)_values;
+                return (T)Convert.ChangeType(_values[item], t);
             }
 
             return base.Get<T>(item);
@@ -1728,6 +1734,7 @@ namespace Dicom
 
             if (typeof(T) == typeof(DicomTransferSyntax))
             {
+                if (item == -1) item = 0;
                 return (T)(object)DicomTransferSyntax.Lookup(_values[item]);
             }
 
@@ -1738,6 +1745,7 @@ namespace Dicom
 
             if (typeof(T) == typeof(DicomUID) || typeof(T) == typeof(object))
             {
+                if (item == -1) item = 0;
                 return (T)(object)_values[item];
             }
 
