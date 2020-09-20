@@ -239,22 +239,26 @@ namespace Dicom.Network
                 {
                     await _hasNonMaxServicesFlag.WaitAsync().ConfigureAwait(false);
 
-                    var networkStream = await listener
-                        .AcceptNetworkStreamAsync(_certificateName, noDelay, _cancellationSource.Token)
-                        .ConfigureAwait(false);
-
-                    if (networkStream != null)
+                    using (var _ct = CancellationTokenSource.CreateLinkedTokenSource(_cancellationSource.Token))
                     {
-                        var scp = CreateScp(networkStream);
-                        if (Options != null)
+                        var networkStream = await listener
+                              .AcceptNetworkStreamAsync(_certificateName, noDelay, _ct.Token) // _cancellationSource.Token)
+                              .ConfigureAwait(false);
+
+
+                        if (networkStream != null)
                         {
-                            scp.Options = Options;
+                            var scp = CreateScp(networkStream);
+                            if (Options != null)
+                            {
+                                scp.Options = Options;
+                            }
+
+                            _services.Add(scp.RunAsync());
+
+                            _hasServicesFlag.Set();
+                            if (IsServicesAtMax) _hasNonMaxServicesFlag.Reset();
                         }
-
-                        _services.Add(scp.RunAsync());
-
-                        _hasServicesFlag.Set();
-                        if (IsServicesAtMax) _hasNonMaxServicesFlag.Reset();
                     }
                 }
             }
@@ -278,7 +282,7 @@ namespace Dicom.Network
         /// <summary>
         /// Remove no longer used client connections.
         /// </summary>
-        private async Task RemoveUnusedServicesAsync()
+        public async Task RemoveUnusedServicesAsync()
         {
             while (!_cancellationSource.IsCancellationRequested)
             {
